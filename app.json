@@ -1,0 +1,72 @@
+{
+  "expo": {
+    "name": "TigTagTrue Admin",
+    "slug": "tigtagtrue-admin",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "userInterfaceStyle": "light",
+    "splash": {
+      "image": "./assets/icon.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#1A1A1A"
+    },
+    "ios": {
+      "supportsTablet": false,
+      "bundleIdentifier": "co.billtable.admin",
+      "appleTeamId": "W9N3NTW7QX",
+      "buildNumber": "1",
+      "infoPlist": {
+        "ITSAppUsesNonExemptEncryption": false,
+        "UIBackgroundModes": [
+          "remote-notification"
+        ]
+      },
+      "entitlements": {
+        "com.apple.developer.usernotifications.time-sensitive": true
+      }
+    },
+    "android": {
+      "package": "co.billtable.admin",
+      "versionCode": 1
+    },
+    "plugins": [
+      "expo-router",
+      [
+        "expo-secure-store",
+        {
+          "faceIDPermission": false
+        }
+      ],
+      [
+        "expo-local-authentication",
+        {
+          "faceIDPermission": "TigTagTrue Admin uses Face ID to unlock the owner dashboard."
+        }
+      ],
+      "expo-font",
+      [
+        "expo-notifications",
+        {
+          "color": "#1A1A1A"
+        }
+      ]
+    ],
+    "scheme": "tigtagtrue-admin",
+    "experiments": {
+      "typedRoutes": false
+    },
+    "extra": {
+      "router": {}
+    },
+    "owner": "billbebe",
+    "web": {
+      "bundler": "metro",
+      "output": "single",
+      "name": "TigTagTrue Admin",
+      "shortName": "TTT Admin",
+      "themeColor": "#FEFEFE",
+      "backgroundColor": "#FEFEFE"
+    }
+  }
+}
