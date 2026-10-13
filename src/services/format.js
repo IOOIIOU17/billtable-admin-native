@@ -43,6 +43,7 @@ export const SECURITY_LABEL = {
   password_changed: 'Password changed',
   account_deleted: 'Account deleted',
   verification_failed: 'Wrong email verification code',
+  email_failed: 'Email could not be sent',
 }
 
 export const RULE_LABEL = {
