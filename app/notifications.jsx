@@ -40,7 +40,7 @@ export default function NotificationsSetup() {
         <Text style={styles.item}>✓  A quiet note when a problem is fixed</Text>
       </View>
       <Text style={styles.small}>
-        Serious problems ring and come through Focus mode (they are "time-sensitive"). The same problem is not sent again for 10 minutes. No marketing, ever.
+        Serious problems ring. The same problem is not sent again for 10 minutes. No marketing, ever.
       </Text>
 
       {result && !result.ok ? (
