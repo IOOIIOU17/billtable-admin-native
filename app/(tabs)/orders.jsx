@@ -12,11 +12,15 @@ import { colors, fonts, fontSize, spacing, status } from '../../src/styles/token
 
 // The newest 50 orders, read-only. Changing an order is done in the web
 // Admin or by the restaurant.
+const PERIODS = [['today', 'Today'], ['week', 'Week'], ['month', 'Month'], ['year', 'Year']]
+const PERIOD_LABEL = { today: 'today', week: '7 days', month: '30 days', year: 'year' }
+
 export default function Orders() {
   const router = useRouter()
   const [orders, setOrders] = useState(null)
   const [total, setTotal] = useState(null)
   const [stats, setStats] = useState(null)
+  const [period, setPeriod] = useState('today')
   const [error, setError] = useState('')
   const [refreshing, setRefreshing] = useState(false)
 
@@ -24,7 +28,7 @@ export default function Orders() {
     setError('')
     const [o, s] = await Promise.allSettled([
       api.get('/api/orders/all', { params: { limit: 50 } }),
-      api.get('/api/admin/stats', { params: { period: 'today' } }),
+      api.get('/api/admin/stats', { params: { period } }),
     ])
     if (o.status === 'fulfilled') {
       const list = o.value.data?.data?.orders || []
@@ -36,7 +40,7 @@ export default function Orders() {
       setOrders((cur) => cur || [])
     }
     if (s.status === 'fulfilled') setStats(s.value.data?.data || null)
-  }, [])
+  }, [period])
 
   useEffect(() => {
     load()
@@ -52,15 +56,33 @@ export default function Orders() {
 
   return (
     <Screen title="Orders" subtitle={total != null ? `Newest 50 of ${fmt(total)} · read-only` : 'Newest 50 · read-only'} refreshing={refreshing} onRefresh={onRefresh}>
+      <View style={styles.periodRow}>
+        {PERIODS.map(([p, label]) => (
+          <TouchableOpacity key={p} onPress={() => setPeriod(p)} style={[styles.chip, period === p && styles.chipOn]} accessibilityRole="button">
+            <Text style={[styles.chipText, period === p && styles.chipTextOn]}>{label}</Text>
+          </TouchableOpacity>
+        ))}
+      </View>
       {stats ? (
-        <Card hint="Today is Los Angeles time. Changes to orders are made in the web Admin or by the restaurant.">
+        <Card hint="Los Angeles time. Orders are changed in the web Admin or by the restaurant.">
           <View style={styles.stats}>
-            <Stat label="orders today" value={fmt(stats.todayOrders)} />
-            <Stat label="sales today" value={money(stats.todayRevenue)} />
+            <Stat label={`orders · ${PERIOD_LABEL[period]}`} value={fmt(stats.periodOrders)} />
+            <Stat label={`sales · ${PERIOD_LABEL[period]}`} value={money(stats.periodRevenue)} />
             <Stat label="restaurants" value={`${fmt(stats.activeRestaurants)}/${fmt(stats.restaurants)}`} sub="open / all" />
             <Stat label="customers" value={fmt(customers)} />
           </View>
           {stats.openIssues ? <Text style={styles.issues}>⚠ {stats.openIssues} open order problem{stats.openIssues > 1 ? 's' : ''} reported</Text> : null}
+        </Card>
+      ) : null}
+      {stats?.money ? (
+        <Card title="Money" hint={`Captured card payments · ${PERIOD_LABEL[period]}. Gross amounts; refunds shown separately.`}>
+          <View style={styles.stats}>
+            <Stat label="money in" value={money((stats.money.grossCents || 0) / 100)} />
+            <Stat label="TigTagTrue fee" value={money((stats.money.feeCents || 0) / 100)} />
+            <Stat label="paid to restaurants" value={money((stats.money.toRestaurantCents || 0) / 100)} />
+            <Stat label="refunds" value={money((stats.money.refundedCents || 0) / 100)} />
+          </View>
+          {stats.money.paidOrders ? <Text style={styles.note}>{fmt(stats.money.paidOrders)} paid order{stats.money.paidOrders > 1 ? 's' : ''}</Text> : <Text style={styles.note}>No captured payments in this period yet.</Text>}
         </Card>
       ) : null}
       {error ? <Text style={styles.error}>{error}</Text> : null}
@@ -105,6 +127,12 @@ const OrderRow = memo(function OrderRow({ o, onPress }) {
 })
 
 const styles = StyleSheet.create({
+  periodRow: { flexDirection: 'row', flexWrap: 'wrap', marginBottom: spacing.xs },
+  chip: { borderWidth: 1.5, borderColor: colors.ink, borderRadius: 12, paddingHorizontal: 12, paddingVertical: 5, marginRight: 6, marginBottom: 6 },
+  chipOn: { backgroundColor: colors.ink },
+  chipText: { fontFamily: fonts.body, fontSize: 14, color: colors.ink },
+  chipTextOn: { color: colors.paper },
+  note: { fontFamily: fonts.body, fontSize: 13, color: colors.pencil, marginTop: 4 },
   stats: { flexDirection: 'row', flexWrap: 'wrap' },
   stat: { width: '50%', paddingVertical: 4 },
   statValue: { fontFamily: fonts.logo, fontSize: 30, color: colors.ink, lineHeight: 34 },
