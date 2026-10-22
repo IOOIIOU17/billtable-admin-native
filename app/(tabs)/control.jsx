@@ -13,7 +13,7 @@ import Light from '../../src/components/Light'
 import { LivePill } from '../../src/components/LiveStatus'
 import { ops, useOpsValue } from '../../src/state/ops'
 import { logout } from '../../src/services/auth'
-import { registerForPush, permissionStatus } from '../../src/services/push'
+import { registerForPush, permissionStatus, sendTestPush } from '../../src/services/push'
 import { getSavedPushToken } from '../../src/services/api'
 import { setUnlocked } from '../../src/state/session'
 import { BASE_URL, IS_PROD, WEB_ADMIN_URL } from '../../src/services/config'
@@ -92,6 +92,17 @@ export default function Control() {
     setPush(r.ok ? { state: 'on' } : { state: r.code === 'denied' ? 'denied' : 'error', reason: r.reason })
   }
 
+  const [test, setTest] = useState('')
+  const doTest = async () => {
+    setTest('sending')
+    try {
+      const r = await sendTestPush()
+      setTest(r.noTokens ? 'none' : 'sent')
+    } catch {
+      setTest('error')
+    }
+  }
+
   const doLogout = async () => {
     setLoggingOut(true)
     ops.stop()
@@ -157,6 +168,10 @@ export default function Control() {
         </Text>
         {push.state === 'off' || push.state === 'error' ? <Button label="Turn on alerts" onPress={enablePush} style={styles.btn} /> : null}
         {push.state === 'denied' ? <Button label="Open Settings" variant="outline" onPress={() => Linking.openSettings()} style={styles.btn} /> : null}
+        {push.state === 'on' ? <Button label="Send a test" variant="outline" onPress={doTest} loading={test === 'sending'} style={styles.btn} /> : null}
+        {test === 'sent' ? <Text style={styles.done}>Test sent - check your lock screen.</Text> : null}
+        {test === 'none' ? <Text style={styles.error}>No phone is registered yet.</Text> : null}
+        {test === 'error' ? <Text style={styles.error}>Could not send the test.</Text> : null}
       </Card>
 
       <Card title="Quick links">

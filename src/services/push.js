@@ -80,6 +80,13 @@ export async function registerForPush({ ask = true } = {}) {
   }
 }
 
+// Sends a test alert to every registered phone (admin only). Returns
+// { status, sent, devices, noTokens? } from the server.
+export async function sendTestPush() {
+  const res = await api.post('/api/admin/push-tokens/test')
+  return res?.data || {}
+}
+
 // Every notification from the server carries data.screen = 'alerts'.
 export function addTapListener(onTap) {
   const sub = Notifications.addNotificationResponseReceivedListener((r) => {
